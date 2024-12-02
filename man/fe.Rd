@@ -72,8 +72,9 @@ An object with a dataframe below.
 }
 }
 \description{
-This function calculates the expected number of events at time t, calculated from first subject randomized.
-The function returns the expected number of events for each arm at time t, based on the provided
+This function calculates the expected number of events under alternative hypothesis
+at calendar time t, which is calculated from first subject randomized. The function
+returns the expected number of events for each arm at time t, based on the provided
 enrollment distribution function and random lost-to-followup distribution if applicable.
 If the total sample size is not provided, then only the corresponding probability of event
 for each arm is provided.

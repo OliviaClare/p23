@@ -7,14 +7,13 @@
 simes(p)
 }
 \arguments{
-\item{p}{A vector of individual raw p values in J.}
+\item{p}{A vectory of individual raw p values in J.}
 }
 \value{
 Adjusted p value using simes procedure
 }
 \description{
-This functions provides the adjusted p value for testing a familywise
-hypothesis H_J based on the p values of individual raw p values in J.
+This functions provides the adjusted p value for testing a familywise hypothesis H_J based on the p values of individual raw p values in J.
 }
 \examples{
 #Example (1): 

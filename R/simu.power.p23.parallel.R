@@ -106,6 +106,7 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
     
     #Combination Z values
     comb.z = matrix(NA, nrow=nSim, ncol=K)
+    bd.z = matrix(NA, nrow=nSim, ncol=K)
     s = rep(NA, nSim) #selected dose
     
     n2 = c(rep(n2[1], n.arms-1), n2[2])
@@ -118,24 +119,29 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
       o=conduct.p23(data=p23i, DCO1=DCO1, dose_selection_endpoint = dose_selection_endpoint, targetEvents2 = targetEvents2, method = method, multiplicity.method=multiplicity.method)
       s[i] = o$s
       
+      #rejection boundary by traditional GSD
+      # now determined by actual events YC ======================================
+      if (K == 1) {bd.z[i] = qnorm(1-alpha)} else {
+        bd.z[i,] = gsDesign::gsDesign(k=K,alpha=alpha,timing=o$actualEvents/o$actualEvents[K],sfu=sf, test.type=1)$upper$bound
+      }
+      
       if (method == "Independent Incremental") {
         for (j in 1:K){
-          oj = comb.pvalue.p23(z1=o$z1,  z2 = o$z2[,j], bd.z=bd.z[j], w=o$w[,j], selected.dose = s[i], method=multiplicity.method)
+          oj = comb.pvalue.p23(z1=o$z1,  z2 = o$z2[,j], bd.z=bd.z[i,j], w=o$w[,j], selected.dose = s[i], method=multiplicity.method)
           comb.z[i, j] = oj$comb.z; 
         }
       } else if (method == "Disjoint Subjects") {
         for (j in 1:K){
-          oj = comb.pvalue.p23(z1=matrix(o$z1[j, ], nrow=1),  z2 = o$z2[,j], bd.z=bd.z[j], w=o$w[,j], selected.dose = s[i], method=multiplicity.method)
+          oj = comb.pvalue.p23(z1=matrix(o$z1[j, ], nrow=1),  z2 = o$z2[,j], bd.z=bd.z[i,j], w=o$w[,j], selected.dose = s[i], method=multiplicity.method)
           comb.z[i, j] = oj$comb.z; 
         }
       } else if (method == "Mixture") {
         comb.z[i, ] = o$z.tilde
       }
     }
-    
   
     
-    re = list(comb.z=comb.z, s=s)
+    re = list(comb.z=comb.z, s=s, bd.z=bd.z)
     
     return(re)
   }
@@ -161,10 +167,10 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
   n.arms = length(n1)
   
   
-  #rejection boundary by traditional GSD
-  if (K == 1) {bd.z = qnorm(1-alpha)} else {
-    bd.z = gsDesign::gsDesign(k=K,alpha=alpha,timing=targetEvents2/targetEvents2[K],sfu=sf, test.type=1)$upper$bound
-  }
+  # #rejection boundary by traditional GSD
+  # if (K == 1) {bd.z = qnorm(1-alpha)} else {
+  #   bd.z = gsDesign::gsDesign(k=K,alpha=alpha,timing=targetEvents2/targetEvents2[K],sfu=sf, test.type=1)$upper$bound
+  # }
   
   
   # Use parLapply to run in parallel
@@ -176,21 +182,21 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
                                  Lambda2 = Lambda2, A2 = A2,
                                  enrollment.hold=enrollment.hold, DCO1 = DCO1, targetEvents2=targetEvents2, 
                                  alpha=alpha, sf=sf, multiplicity.method=multiplicity.method,
-                                 method = method, bd.z=bd.z
+                                 method = method, bd.z=NULL
   )
   
   
   nSims_actual = (nsim_per_cluster * nCore)
   comb.zall <- c()
   s.all <- c()
+  bd.zall <- c()
   for( i in 1:length(results)){
     comb.zall = rbind(comb.zall, results[[i]]$comb.z)
     s.all <- c(s.all, results[[i]]$s)
+    bd.zall <- rbind(bd.zall, results[[i]]$bd.z)
   }
+  cum.pow=gsd.power(z = comb.zall, bd.z=as.matrix(bd.zall))
   
-  
-  
-  cum.pow=gsd.power(z = comb.zall, bd.z=bd.z)
   
   selection = rep(NA, n.arms-1)
   for (j in 1:(n.arms-1)) {
@@ -199,7 +205,7 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
   
   o = list()
   o$cum.pow = cum.pow
-  o$bd.z = bd.z
+  o$bd.z = bd.zall[1:5,]
   o$multiplicity.method = multiplicity.method
   o$method = method
   

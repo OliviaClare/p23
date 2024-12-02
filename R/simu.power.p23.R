@@ -104,13 +104,13 @@ simu.power.p23 = function(nSim=10, n1 = rep(50, 4), n2 = rep(200, 2), m = c(9,9,
   #Number of arms
   n.arms = length(n1)
   
-  #rejection boundary by traditional GSD
-  if (K == 1) {bd.z = qnorm(1-alpha)} else {
-    bd.z = gsDesign::gsDesign(k=K,alpha=alpha,timing=targetEvents2/targetEvents2[K],sfu=sf, test.type=1)$upper$bound
-  }
+  # #rejection boundary by traditional GSD
+  # if (K == 1) {bd.z = qnorm(1-alpha)} else {
+  #   bd.z = gsDesign::gsDesign(k=K,alpha=alpha,timing=targetEvents2/targetEvents2[K],sfu=sf, test.type=1)$upper$bound
+  # }
   
   #Combination Z values
-  comb.z = matrix(NA, nrow=nSim, ncol=K)
+  comb.z = bd.z = matrix(NA, nrow=nSim, ncol=K)
   s = rep(NA, nSim) #selected dose
   
   n2 = c(rep(n2[1], n.arms-1), n2[2])
@@ -123,14 +123,19 @@ simu.power.p23 = function(nSim=10, n1 = rep(50, 4), n2 = rep(200, 2), m = c(9,9,
     o=conduct.p23(data=p23i, DCO1=DCO1, dose_selection_endpoint = dose_selection_endpoint, targetEvents2 = targetEvents2, method = method, multiplicity.method=multiplicity.method)
     s[i] = o$s
     
+    #rejection boundary by traditional GSD
+    if (K == 1) {bd.z[i] = qnorm(1-alpha)} else {
+      bd.z[i,] = gsDesign::gsDesign(k=K,alpha=alpha,timing=o$actualEvents/o$actualEvents[K],sfu=sf, test.type=1)$upper$bound
+    }
+    
     if (method == "Independent Incremental") {
       for (j in 1:K){
-        oj = comb.pvalue.p23(z1=o$z1,  z2 = o$z2[,j], bd.z=bd.z[j], w=o$w[,j], selected.dose = s[i], method=multiplicity.method)
+        oj = comb.pvalue.p23(z1=o$z1,  z2 = o$z2[,j], bd.z=bd.z[i,j], w=o$w[,j], selected.dose = s[i], method=multiplicity.method)
         comb.z[i, j] = oj$comb.z; 
       }
     } else if (method == "Disjoint Subjects") {
       for (j in 1:K){
-        oj = comb.pvalue.p23(z1=matrix(o$z1[j, ], nrow=1),  z2 = o$z2[,j], bd.z=bd.z[j], w=o$w[,j], selected.dose = s[i], method=multiplicity.method)
+        oj = comb.pvalue.p23(z1=matrix(o$z1[j, ], nrow=1),  z2 = o$z2[,j], bd.z=bd.z[i,j], w=o$w[,j], selected.dose = s[i], method=multiplicity.method)
         comb.z[i, j] = oj$comb.z; 
       }
     } else if (method == "Mixture") {

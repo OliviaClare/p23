@@ -104,7 +104,7 @@
 #' 
 #' #Combination p value
 #' comb.pvalue.p23(z1=matrix(d$z1[1, ], nrow=1),  z2 = d$z2[,1], bd.z=bd.z[1], w=d$w[,1], selected.dose = sel$s, method="simes")
-#' 
+#' @import dplyr 
 #' @export 
 #' 
 conduct.p23 = function(data=NULL, DCO1=16, targetEvents2 = c(300, 380), dose_selection_endpoint = "ORR",
@@ -113,6 +113,32 @@ conduct.p23 = function(data=NULL, DCO1=16, targetEvents2 = c(300, 380), dose_sel
   #1. Dose selection  
   sel = select.dose.p23 (data=data, DCO1=DCO1, dose_selection_endpoint = dose_selection_endpoint)
   s=sel$s
+
+  
+  # Determine IA timing YC============
+  K=max(data$group)
+  n1 = data %>% filter(group==0, stage==1) %>% nrow()
+  DCO_IAstage1<- data %>%
+    arrange(calendarTime) %>%               # Sort by time
+    dplyr::filter(cnsr == 0, stage==1, group%in%c(s-1, K)) %>%          # Keep only rows with events in selected arm and control arms, `group` is 0,1,2,... but `s` starts with 1
+    slice(round(n1*2*0.637)) %>%                   # Select the DCO event for IA
+    pull(calendarTime)                      # Extract the time of the DCO event for IA
+  
+  targetEvents.IA.candidate = data %>%
+    arrange(calendarTime) %>%               # Sort by time
+    dplyr::filter(cnsr==0, group%in%c(s-1, K), calendarTime<=DCO_IAstage1) %>% 
+    nrow() 
+  
+  DCO_FA <- data %>%
+    arrange(calendarTime) %>%               # Sort by time
+    dplyr::filter(cnsr == 0, group%in%c(s-1, K)) %>%          # Keep only rows with events in selected arm and control arms
+    slice(targetEvents2[length(targetEvents2)]) %>%                   # Select the FA event
+    pull(calendarTime)                      # Extract the time of the DCO event for FA
+  
+  if(DCO_IAstage1 > DCO_FA){
+    stop("Error: The timing of IA exceeds timing of FA.")
+  }
+  targetEvents2[1] = max(targetEvents2[1], targetEvents.IA.candidate)
   
   #2. Assemble the trial data combining stage 1 and stage 2 for selected dose + control
   dat23 = data[data$group == 0 | data$group == s, ]
@@ -271,6 +297,8 @@ conduct.p23 = function(data=NULL, DCO1=16, targetEvents2 = c(300, 380), dose_sel
   }
   o$dose.selection.endpoint=dose_selection_endpoint
   o$method = method
+  
+  o$actualEvents = targetEvents2
   
   return(o)
 }

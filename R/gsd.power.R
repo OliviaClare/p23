@@ -42,13 +42,24 @@ gsd.power = function(z, bd.z, p=NULL, bd.p=NULL){
   cum.pow = rep(NA, K)
   
   if (!is.null(z)) {
-    for (j in 1:K){
-      tmp = 0
-      for (ii in 1:j){
-        tmp = tmp + as.numeric(z[,ii] > bd.z[ii])
+    if(is.matrix(bd.z)){
+      for (j in 1:K){
+        tmp = 0
+        for (ii in 1:j){
+          tmp = tmp + as.numeric(z[,ii] > bd.z[,ii]) # altered to reflect actual bd.z YC=========
+        }
+        cum.pow[j] = sum(tmp > 0) / N
       }
-      cum.pow[j] = sum(tmp > 0) / N
+    }else{
+      for (j in 1:K){
+        tmp = 0
+        for (ii in 1:j){
+          tmp = tmp + as.numeric(z[,ii] > bd.z[ii]) # one boundary for all (original)
+        }
+        cum.pow[j] = sum(tmp > 0) / N
+      }
     }
+    
   } else {
     for (j in 1:K){
       tmp = 0

@@ -14,7 +14,7 @@ conduct.p23(
 )
 }
 \arguments{
-\item{data}{Dataset produced by simu.p23trial function}
+\item{data}{Dataset produced by simu.p23trial() function}
 
 \item{DCO1}{Data cutoff for Stage 1}
 
@@ -22,11 +22,7 @@ conduct.p23(
 
 \item{dose_selection_endpoint}{Endpoint for dose selection at Stage 1. "ORR" or "not ORR"}
 
-\item{method}{Options include "Independent Incremental": z1 at dose selection and z2 is from dose selection to kth analysis at stage 2;
-"Disjoint Subjects": z1 is at kth analysis for stage 1 subjects; z2 is at the kth analysis for stage 2 subjects. z1 will be adjusted by multiplicity and closed testing procedure at each analysis.
-"Mixture": Only consider disjoint subjects at first analysis in stage 2. Starting from the 2nd analysis, consider independent incremental methods. Only z1 at 1st analysis will be adjusted by multiplicity and closed testing procedure.}
-
-\item{multiplicity.method}{"simes", "Dunnett".}
+\item{method}{"simes", "Dunnett".}
 }
 \value{
 If method is "Independent Incremental", return an object with variables
@@ -54,7 +50,7 @@ If method is "Mixture", return an object with variables
 \item{z.tilde}{Test statistics for group sequential design at Stage 2}
 \item{z.c}{z value for each analysis at Stage 2 for the selected dose}
 \item{z2}{Incremental z statistic at each anaysis at Stage 2, calculated from 1st analysis to each following analysis}
-\item{v}{Weight for 2nd and further analysis combining z1.tilde and z2(k) to calculate z.tilde(k)}
+\item{v}{Weight for 2nd and further analysis combining z1.tilde and z2\link{k} to calculate z.tilde\link{k}}
 }
 }
 \description{
@@ -121,11 +117,8 @@ conduct.p23(data=p23trial, DCO1=16, dose_selection_endpoint = "ORR",
 targetEvents2 = c(300, 380), method = "Mixture")
 
 #Rejection boundary
-bd.z = gsDesign::gsDesign(k=2,alpha=0.025,timing=targetEvents2/targetEvents2[K],
-sfu=gsDesign::sfLDOF, test.type=1)$upper$bound
+bd.z = gsDesign::gsDesign(k=2,alpha=0.025,timing=targetEvents2/targetEvents2[K],sfu=gsDesign::sfLDOF, test.type=1)$upper$bound
 
 #Combination p value
-comb.pvalue.p23(z1=matrix(d$z1[1, ], nrow=1),  z2 = d$z2[,1], bd.z=bd.z[1], 
-w=d$w[,1], selected.dose = sel$s, method="simes")
-
+comb.pvalue.p23(z1=matrix(d$z1[1, ], nrow=1),  z2 = d$z2[,1], bd.z=bd.z[1], w=d$w[,1], selected.dose = sel$s, method="simes")
 }
