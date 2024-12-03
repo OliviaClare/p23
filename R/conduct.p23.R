@@ -136,7 +136,16 @@ conduct.p23 = function(data=NULL, DCO1=16, targetEvents2 = c(300, 380), dose_sel
     pull(calendarTime)                      # Extract the time of the DCO event for FA
   
   if(DCO_IAstage1 > DCO_FA){
-    stop("Error: The timing of IA exceeds timing of FA.")
+    warning("Error: The timing of IA exceeds timing of FA.")
+    o = list()
+    o$s = s
+    o$dose.selection.endpoint=dose_selection_endpoint
+    o$method = "NA"
+    dat23 = data[data$group == 0 | data$group == s, ]
+    dat23k = f.dataCut(data=dat23, targetEvents=targetEvents2[K])
+    o$z = logrank.one.sided(time=dat23k$survTimeCut, cnsr=dat23k$cnsrCut, group=dat23k$group)$z
+    o$actualEvents = targetEvents2
+    return(o)
   }
   targetEvents2[1] = max(targetEvents2[1], targetEvents.IA.candidate)
   

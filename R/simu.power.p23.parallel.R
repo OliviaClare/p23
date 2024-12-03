@@ -119,6 +119,7 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
       o=conduct.p23(data=p23i, DCO1=DCO1, dose_selection_endpoint = dose_selection_endpoint, targetEvents2 = targetEvents2, method = method, multiplicity.method=multiplicity.method)
       s[i] = o$s
       
+      
       #rejection boundary by traditional GSD
       # now determined by actual events YC ======================================
       if (K == 1) {bd.z[i] = qnorm(1-alpha)} else {
@@ -137,6 +138,8 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
         }
       } else if (method == "Mixture") {
         comb.z[i, ] = o$z.tilde
+      }else if(o$method=="NA"){ # deal with IA exceeds FA YC =============================
+        comb.z[i,]=c(NA, o$z)
       }
     }
   
