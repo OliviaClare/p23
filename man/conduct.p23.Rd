@@ -10,7 +10,8 @@ conduct.p23(
   targetEvents2 = c(300, 380),
   dose_selection_endpoint = "ORR",
   method = "Independent Incremental",
-  multiplicity.method = "simes"
+  multiplicity.method = "simes",
+  e1 = NULL
 )
 }
 \arguments{

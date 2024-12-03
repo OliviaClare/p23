@@ -245,8 +245,9 @@ conduct.p23 = function(data=NULL, DCO1=16, targetEvents2 = c(300, 380), dose_sel
     z21 = logrank.one.sided(time=dat23.21$survTimeCut, cnsr=dat23.21$cnsrCut, group=dat23.21$group)$z
     
     #Number of events for stage 1 subjects
-    e11 = sum(1-dat23.11$cnsrCut)
-    frac1 = e11/targetEvents2[1]
+    # e11 = sum(1-dat23.11$cnsrCut)
+    # frac1 = e11/targetEvents2[1]
+    frac1 = e1[1,s]/targetEvents2[1] # pre-specified weight YC ===================
     
     #weight w for combining z1 and z2 in next step
     omega1 = sqrt(frac1)
