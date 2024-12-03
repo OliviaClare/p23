@@ -38,7 +38,16 @@
 gsd.power = function(z, bd.z, p=NULL, bd.p=NULL){
   
   if (!is.null(z)){K = ncol(z)} else {K = ncol(p)}
-  if (!is.null(z)){N = nrow(z)} else {N = nrow(p)}
+  if (!is.null(z)){ # filter out NA rows in z and corresponding bd.z YC ============
+    narows = which(is.na(rowSums(z)))
+    if(length(narows)!=0){
+      warning(paste0("A total of ", narows, " trials have no interim analysis."))
+      z = z[-narows,]
+      bd.z = bd.z[-narows,]
+    }
+    N = nrow(z)
+  } else {N = nrow(p)}
+  # if (!is.null(z)){N = nrow(z)} else {N = nrow(p)}
   cum.pow = rep(NA, K)
   
   if (!is.null(z)) {

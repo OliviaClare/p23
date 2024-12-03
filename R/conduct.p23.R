@@ -108,7 +108,7 @@
 #' @export 
 #' 
 conduct.p23 = function(data=NULL, DCO1=16, targetEvents2 = c(300, 380), dose_selection_endpoint = "ORR",
-                       method = "Independent Incremental", multiplicity.method="simes"){
+                       method = "Independent Incremental", multiplicity.method="simes", e1=NULL){
 
   #1. Dose selection  
   sel = select.dose.p23 (data=data, DCO1=DCO1, dose_selection_endpoint = dose_selection_endpoint)
@@ -136,13 +136,13 @@ conduct.p23 = function(data=NULL, DCO1=16, targetEvents2 = c(300, 380), dose_sel
     pull(calendarTime)                      # Extract the time of the DCO event for FA
   
   if(DCO_IAstage1 > DCO_FA){
-    warning("Error: The timing of IA exceeds timing of FA.")
+    warning("Warning: The timing of IA exceeds timing of FA.")
     o = list()
     o$s = s
     o$dose.selection.endpoint=dose_selection_endpoint
     o$method = "NA"
     dat23 = data[data$group == 0 | data$group == s, ]
-    dat23k = f.dataCut(data=dat23, targetEvents=targetEvents2[K])
+    dat23k = f.dataCut(data=dat23, targetEvents=targetEvents2[length(targetEvents2)])
     o$z = logrank.one.sided(time=dat23k$survTimeCut, cnsr=dat23k$cnsrCut, group=dat23k$group)$z
     o$actualEvents = targetEvents2
     return(o)
@@ -211,8 +211,8 @@ conduct.p23 = function(data=NULL, DCO1=16, targetEvents2 = c(300, 380), dose_sel
       z21[k] = logrank.one.sided(time=dat2k$survTimeCut, cnsr=dat2k$cnsrCut, group=dat2k$group)$z
       
       #Number of events for stage 1 subjects
-      e1k = sum(1-dat1k$cnsrCut)
-      frac.k = e1k/targetEvents2[k]
+      # e1k = sum(1-dat1k$cnsrCut)
+      frac.k = e1[k,s]/targetEvents2[k] # pre-specified weight YC ===================
       
       #weight w for combining z1 and z2 in next step
       w[k] = sqrt(frac.k)
