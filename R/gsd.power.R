@@ -41,7 +41,7 @@ gsd.power = function(z, bd.z, p=NULL, bd.p=NULL){
   if (!is.null(z)){ # filter out NA rows in z and corresponding bd.z YC ============
     narows = which(is.na(rowSums(z)))
     if(length(narows)!=0){
-      warning(paste0("A total of ", narows, " trials have no interim analysis."))
+      warning(paste0("A total of ", length(narows), " trials have no interim analysis."))
       z = z[-narows,]
       bd.z = bd.z[-narows,]
     }
