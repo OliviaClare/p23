@@ -42,23 +42,25 @@ gsd.power = function(z, bd.z, p=NULL, bd.p=NULL){
     narows = which(is.na(rowSums(z)))
     if(length(narows)!=0){
       warning(paste0("A total of ", length(narows), " trials have no interim analysis."))
-      z = z[-narows,]
-      bd.z = bd.z[-narows,]
+      # they are still included 
+      # z = z[-narows,]
+      # bd.z = bd.z[-narows,]
     }
     N = nrow(z)
   } else {N = nrow(p)}
   # if (!is.null(z)){N = nrow(z)} else {N = nrow(p)}
-  cum.pow = rep(NA, K)
+  cum.pow = rep(NA)
   
   if (!is.null(z)) {
     if(is.matrix(bd.z)){
-      for (j in 1:K){
-        tmp = 0
-        for (ii in 1:j){
-          tmp = tmp + as.numeric(z[,ii] > bd.z[,ii]) # altered to reflect actual bd.z YC=========
-        }
-        cum.pow[j] = sum(tmp > 0) / N
-      }
+      cum.pow = colMeans(z>bd.z, na.rm=T)
+      # for (j in 1:K){
+      #   tmp = 0
+      #   for (ii in 1:j){
+      #     tmp = tmp + as.numeric(z[,ii] > bd.z[,ii]) # altered to reflect actual bd.z YC=========
+      #   }
+      #   cum.pow[j] = sum(tmp > 0) / N
+      # }
     }else{
       for (j in 1:K){
         tmp = 0

@@ -135,7 +135,7 @@ conduct.p23 = function(data=NULL, DCO1=16, targetEvents2 = c(300, 380), dose_sel
     slice(targetEvents2[length(targetEvents2)]) %>%                   # Select the FA event
     pull(calendarTime)                      # Extract the time of the DCO event for FA
   
-  if(DCO_IAstage1 > DCO_FA){
+  if(DCO_IAstage1 >= DCO_FA){
     warning("Warning: The timing of IA exceeds timing of FA.")
     o = list()
     o$s = s

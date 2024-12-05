@@ -141,17 +141,17 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
         bd.z[i,] = gsDesign::gsDesign(k=K,alpha=alpha,timing=o$actualEvents/o$actualEvents[K],sfu=sf, test.type=1)$upper$bound
       }
       
-      if (method == "Independent Incremental") {
+      if (o$method == "Independent Incremental") {
         for (j in 1:K){
           oj = comb.pvalue.p23(z1=o$z1,  z2 = o$z2[,j], bd.z=bd.z[i,j], w=o$w[,j], selected.dose = s[i], method=multiplicity.method)
           comb.z[i, j] = oj$comb.z; 
         }
-      } else if (method == "Disjoint Subjects") {
+      } else if (o$method == "Disjoint Subjects") {
         for (j in 1:K){
           oj = comb.pvalue.p23(z1=matrix(o$z1[j, ], nrow=1),  z2 = o$z2[,j], bd.z=bd.z[i,j], w=o$w[,j], selected.dose = s[i], method=multiplicity.method)
           comb.z[i, j] = oj$comb.z; 
         }
-      } else if (method == "Mixture") {
+      } else if (o$method == "Mixture") {
         comb.z[i, ] = o$z.tilde
       }else if(o$method=="NA"){ # deal with IA exceeds FA YC =============================
         comb.z[i,]=c(NA, o$z)
