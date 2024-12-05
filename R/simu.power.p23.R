@@ -124,7 +124,7 @@ simu.power.p23 = function(nSim=10, n1 = rep(50, 4), n2 = rep(200, 2), m = c(9,9,
                     enrollment.hold=enrollment.hold, targetEvents = targetEvents2[k])
   }
   for (i in 1:nSim){
-    print(i)
+    if(i%% 1000 == 0) print(i)
     p23i = simu.p23trial(n1 = n1, n2 = n2, m = m, 
                              orr = orr, rho = rho, dose_selection_endpoint = dose_selection_endpoint,
                              Lambda1 = Lambda1, A1 = A1, 
@@ -136,10 +136,6 @@ simu.power.p23 = function(nSim=10, n1 = rep(50, 4), n2 = rep(200, 2), m = c(9,9,
                   multiplicity.method=multiplicity.method,
                   e1=e1)
     s[i] = o$s
-    
-    # if(i==77){
-    #   print("hello bug!")
-    # }
     
     #rejection boundary by traditional GSD
     if (K == 1) {bd.z[i] = qnorm(1-alpha)} else {
