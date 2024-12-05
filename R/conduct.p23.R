@@ -115,39 +115,43 @@ conduct.p23 = function(data=NULL, DCO1=16, targetEvents2 = c(300, 380), dose_sel
   s=sel$s
 
   
-  # Determine IA timing YC============
-  K=max(data$group)
-  n1 = data %>% filter(group==0, stage==1) %>% nrow()
-  DCO_IAstage1<- data %>%
-    arrange(calendarTime) %>%               # Sort by time
-    dplyr::filter(cnsr == 0, stage==1, group%in%c(s-1, K)) %>%          # Keep only rows with events in selected arm and control arms, `group` is 0,1,2,... but `s` starts with 1
-    slice(round(n1*2*0.637)) %>%                   # Select the DCO event for IA
-    pull(calendarTime)                      # Extract the time of the DCO event for IA
-  
-  targetEvents.IA.candidate = data %>%
-    arrange(calendarTime) %>%               # Sort by time
-    dplyr::filter(cnsr==0, group%in%c(s-1, K), calendarTime<=DCO_IAstage1) %>% 
-    nrow() 
-  
-  DCO_FA <- data %>%
-    arrange(calendarTime) %>%               # Sort by time
-    dplyr::filter(cnsr == 0, group%in%c(s-1, K)) %>%          # Keep only rows with events in selected arm and control arms
-    slice(targetEvents2[length(targetEvents2)]) %>%                   # Select the FA event
-    pull(calendarTime)                      # Extract the time of the DCO event for FA
-  
-  if(DCO_IAstage1 >= DCO_FA){
-    warning("Warning: The timing of IA exceeds timing of FA.")
-    o = list()
-    o$s = s
-    o$dose.selection.endpoint=dose_selection_endpoint
-    o$method = "NA"
-    dat23 = data[data$group == 0 | data$group == s, ]
-    dat23k = f.dataCut(data=dat23, targetEvents=targetEvents2[length(targetEvents2)])
-    o$z = logrank.one.sided(time=dat23k$survTimeCut, cnsr=dat23k$cnsrCut, group=dat23k$group)$z
-    o$actualEvents = targetEvents2
-    return(o)
+
+  if(method=="Mixture"|| method=="Independent Incremental"){
+    # Determine IA timing YC============
+    K=max(data$group) # control arm index
+    n1 = data %>% filter(group==0, stage==1) %>% nrow()
+    DCO_IAstage1<- data %>%
+      arrange(calendarTime) %>%               # Sort by time
+      dplyr::filter(cnsr == 0, stage==1, group%in%c(s-1, K)) %>%          # Keep only rows with events in selected arm and control arms, `group` is 0,1,2,... but `s` starts with 1
+      slice(round(n1*2*0.637)) %>%                   # Select the DCO event for IA
+      pull(calendarTime)                      # Extract the time of the DCO event for IA
+    
+    targetEvents.IA.candidate = data %>%
+      arrange(calendarTime) %>%               # Sort by time
+      dplyr::filter(cnsr==0, group%in%c(s-1, K), calendarTime<=DCO_IAstage1) %>% 
+      nrow() 
+    
+    DCO_FA <- data %>%
+      arrange(calendarTime) %>%               # Sort by time
+      dplyr::filter(cnsr == 0, group%in%c(s-1, K)) %>%          # Keep only rows with events in selected arm and control arms
+      slice(targetEvents2[length(targetEvents2)]) %>%                   # Select the FA event
+      pull(calendarTime)                      # Extract the time of the DCO event for FA
+    
+    if(DCO_IAstage1 >= DCO_FA){
+      warning("Warning: The timing of IA exceeds timing of FA.")
+      o = list()
+      o$s = s
+      o$dose.selection.endpoint=dose_selection_endpoint
+      o$method = "NA"
+      dat23 = data[data$group == 0 | data$group == s, ]
+      dat23k = f.dataCut(data=dat23, targetEvents=targetEvents2[length(targetEvents2)])
+      o$z = logrank.one.sided(time=dat23k$survTimeCut, cnsr=dat23k$cnsrCut, group=dat23k$group)$z
+      o$actualEvents = rep(targetEvents2[length(targetEvents2)],2)
+      return(o)
+    }
+    targetEvents2[1] = max(targetEvents2[1], targetEvents.IA.candidate)
   }
-  targetEvents2[1] = max(targetEvents2[1], targetEvents.IA.candidate)
+  
   
   #2. Assemble the trial data combining stage 1 and stage 2 for selected dose + control
   dat23 = data[data$group == 0 | data$group == s, ]

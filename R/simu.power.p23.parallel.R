@@ -107,6 +107,7 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
     #Combination Z values
     comb.z = matrix(NA, nrow=nSim, ncol=K)
     bd.z = matrix(NA, nrow=nSim, ncol=K)
+    actual.events = matrix(NA, nrow=nSim, ncol=K)
     s = rep(NA, nSim) #selected dose
     
     n2 = c(rep(n2[1], n.arms-1), n2[2])
@@ -134,7 +135,7 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
                     multiplicity.method=multiplicity.method, e1=e1)
       s[i] = o$s
       
-      
+      actual.events[i,] = o$actualEvents
       #rejection boundary by traditional GSD
       # now determined by actual events YC ======================================
       if (K == 1) {bd.z[i] = qnorm(1-alpha)} else {
@@ -159,7 +160,7 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
     }
   
     
-    re = list(comb.z=comb.z, s=s, bd.z=bd.z)
+    re = list(comb.z=comb.z, s=s, bd.z=bd.z, actual.events=actual.events)
     
     return(re)
   }
@@ -208,11 +209,13 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
   comb.zall <- c()
   s.all <- c()
   bd.zall <- c()
+  actual.eall <- c()
   for( i in 1:length(results)){
     # if(is.na(sum(results[[i]]$comb.z))) next
     comb.zall = rbind(comb.zall, results[[i]]$comb.z)
     s.all <- c(s.all, results[[i]]$s)
     bd.zall <- rbind(bd.zall, results[[i]]$bd.z)
+    actual.eall <- rbind(actual.eall, results[[i]]$actual.events)
   }
   cum.pow=gsd.power(z = comb.zall, bd.z=as.matrix(bd.zall))
   
@@ -229,6 +232,8 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
   o$method = method
   
   o$selection = selection
+  
+  o$actualEvents = colMeans(actual.eall, na.rm=T)
   
   #Calculate the generalized power by simulation, defined as the correct selection of the best dose in OS and H0 rejected
   
