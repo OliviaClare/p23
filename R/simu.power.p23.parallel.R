@@ -250,7 +250,8 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
     if (sum(s.all == best.dose) > 0) {
       correct.selection = (1:nSims_actual)[s.all == best.dose]
       correct.comb.z = matrix(comb.zall[correct.selection, ], ncol = K)
-      generalized.pow=gsd.power(z = correct.comb.z, bd.z=bd.z) * length(correct.selection) / nSim
+      correct.bd.z = matrix(bd.zall[correct.selection, ], ncol = K)
+      generalized.pow=gsd.power(z = correct.comb.z, bd.z=correct.bd.z) * length(correct.selection) / nSim
     } else {generalized.pow = 0}
     
     o$best.dose = best.dose 

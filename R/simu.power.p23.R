@@ -124,15 +124,11 @@ simu.power.p23 = function(nSim=10, n1 = rep(50, 4), n2 = rep(200, 2), m = c(9,9,
                     enrollment.hold=enrollment.hold, targetEvents = targetEvents2[k])
   }
   for (i in 1:nSim){
-    # if(i%% 1000 == 0) 
-      print(i)
+    if(i%% 1000 == 0){print(i)}
     p23i = simu.p23trial(n1 = n1, n2 = n2, m = m, 
                              orr = orr, rho = rho, dose_selection_endpoint = dose_selection_endpoint,
                              Lambda1 = Lambda1, A1 = A1, 
                              Lambda2 = Lambda2, A2 = A2, enrollment.hold=enrollment.hold)
-    if(i==77){
-      print(":hello bug!")
-    }
     o=conduct.p23(data=p23i, DCO1=DCO1, 
                   dose_selection_endpoint = dose_selection_endpoint, 
                   targetEvents2 = targetEvents2, method = method, 
@@ -193,7 +189,8 @@ simu.power.p23 = function(nSim=10, n1 = rep(50, 4), n2 = rep(200, 2), m = c(9,9,
     if (sum(s == best.dose) > 0) {
       correct.selection = (1:nSim)[s == best.dose]
       correct.comb.z = matrix(comb.z[correct.selection, ], ncol = K)
-      generalized.pow=gsd.power(z = correct.comb.z, bd.z=bd.z) * length(correct.selection) / nSim
+      correct.bd.z = matrix(bd.z[correct.selection, ], ncol = K)
+      generalized.pow=gsd.power(z = correct.comb.z, bd.z=correct.bd.z) * length(correct.selection) / nSim
     } else {generalized.pow = 0}
    
     o$best.dose = best.dose 
