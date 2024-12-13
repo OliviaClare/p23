@@ -116,7 +116,7 @@ conduct.p23 = function(data=NULL, DCO1=16, targetEvents2 = c(300, 380), dose_sel
 
   
 
-  if(method=="Mixture"|| method=="Independent Incremental"){
+  if(method=="Mixture"){
     # Determine IA timing YC============
     K=max(data$group) # control arm index
     n1 = data %>% filter(group==0, stage==1) %>% nrow()
