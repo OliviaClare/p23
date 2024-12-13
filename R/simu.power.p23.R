@@ -143,8 +143,18 @@ simu.power.p23 = function(nSim=10, n1 = rep(50, 4), n2 = rep(200, 2), m = c(9,9,
     
     #rejection boundary by traditional GSD
     if (K == 1) {bd.z[i] = qnorm(1-alpha)} else {
-      bd.z[i,] = gsDesign::gsDesign(k=K,alpha=alpha,timing=o$actualEvents/o$actualEvents[K],sfu=sf, test.type=1)$upper$bound
-    }
+      if(o$method == "Disjoint Subjects"){
+        corr.z = o$w[1]*o$w[2]*sqrt(o$actualEventsS1[1]/o$actualEventsS1[K]) + 
+          sqrt(1-o$w[1]^2)*sqrt(1-o$w[2]^2)*sqrt((o$actualEvents[1]-o$actualEventsS1[1])/(o$actualEvents[K]-o$actualEventsS1[K]))
+        
+        bd.z[i,] = gsDesign::gsDesign(k=K,alpha=alpha,
+                                      sfu=sf, test.type=1,
+                                      n.I = c(o$actualEvents[1], o$actualEvents[1]/corr.z^2),
+                                      maxn.IPlan = targetEvents2[K])$upper$bound
+      }else{
+        bd.z[i,] = gsDesign::gsDesign(k=K,alpha=alpha,timing=o$actualEvents/o$actualEvents[K],sfu=sf, test.type=1)$upper$bound
+      }
+      }
     
     if (o$method == "Independent Incremental") {
       for (j in 1:K){

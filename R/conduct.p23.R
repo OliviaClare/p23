@@ -118,22 +118,21 @@ conduct.p23 = function(data=NULL, DCO1=16, targetEvents2 = c(300, 380), dose_sel
 
   if(method=="Mixture"){
     # Determine IA timing YC============
-    K=max(data$group) # control arm index
     n1 = data %>% filter(group==0, stage==1) %>% nrow()
     DCO_IAstage1<- data %>%
       arrange(calendarTime) %>%               # Sort by time
-      dplyr::filter(cnsr == 0, stage==1, group%in%c(s-1, K)) %>%          # Keep only rows with events in selected arm and control arms, `group` is 0,1,2,... but `s` starts with 1
+      dplyr::filter(cnsr == 0, stage==1, group%in%c(0, s)) %>%          # Keep only rows with events in selected arm and control arms, `group` is 0,1,2,... but `s` starts with 1
       slice(round(n1*2*0.637)) %>%                   # Select the DCO event for IA
       pull(calendarTime)                      # Extract the time of the DCO event for IA
     
     targetEvents.IA.candidate = data %>%
       arrange(calendarTime) %>%               # Sort by time
-      dplyr::filter(cnsr==0, group%in%c(s-1, K), calendarTime<=DCO_IAstage1) %>% 
+      dplyr::filter(cnsr==0, group%in%c(0, s), calendarTime<=DCO_IAstage1) %>% 
       nrow() 
     
     DCO_FA <- data %>%
       arrange(calendarTime) %>%               # Sort by time
-      dplyr::filter(cnsr == 0, group%in%c(s-1, K)) %>%          # Keep only rows with events in selected arm and control arms
+      dplyr::filter(cnsr == 0, group%in%c(0, s)) %>%          # Keep only rows with events in selected arm and control arms
       slice(targetEvents2[length(targetEvents2)]) %>%                   # Select the FA event
       pull(calendarTime)                      # Extract the time of the DCO event for FA
     
@@ -151,6 +150,7 @@ conduct.p23 = function(data=NULL, DCO1=16, targetEvents2 = c(300, 380), dose_sel
     }
     targetEvents2[1] = max(targetEvents2[1], targetEvents.IA.candidate)
   }
+  
   
   
   #2. Assemble the trial data combining stage 1 and stage 2 for selected dose + control
@@ -184,6 +184,21 @@ conduct.p23 = function(data=NULL, DCO1=16, targetEvents2 = c(300, 380), dose_sel
     }
     
   } else if (method == "Disjoint Subjects") {
+    
+    # identify Events from stage 1 patients at IA and FA with K==2 YC====================
+    actualEvents_S1_IA <- dat23 %>%
+      arrange(calendarTime) %>%               # Sort by time
+      dplyr::filter(cnsr == 0) %>%     
+      mutate(nevents=cumsum(cnsr==0)) %>% 
+      filter(nevents<= targetEvents2[1], stage==1) %>% nrow()    
+    
+    actualEvents_S1_FA <- dat23 %>%
+      arrange(calendarTime) %>%               # Sort by time
+      dplyr::filter(cnsr == 0) %>%     
+      mutate(nevents=cumsum(cnsr==0)) %>% 
+      filter(nevents<= targetEvents2[length(targetEvents2)], stage==1) %>% nrow()    
+    
+    
     #1st component in weighted z as of Stage 1 subjects at each analysis
     z11 = rep(NA, K)    
     
@@ -300,6 +315,7 @@ conduct.p23 = function(data=NULL, DCO1=16, targetEvents2 = c(300, 380), dose_sel
     o$z.c = matrix(z.c, nrow=1)
     o$w = matrix(w, nrow=1)
   } else if (method == "Disjoint Subjects") {
+    o$actualEventsS1 = c(actualEvents_S1_IA, actualEvents_S1_FA)
     o$z1 = z1; o$z2 = matrix(z2, nrow=1); o$w = matrix(w, nrow=1)
   } else if (method == "Mixture") {
     o$z1.unselected = z1.IAd
