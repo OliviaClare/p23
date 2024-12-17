@@ -84,6 +84,7 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
                                     Lambda1 = function(t){(t/12)*as.numeric(t<= 12) + as.numeric(t > 12)}, A1 = 12,
                                     Lambda2 = function(t){(t/12)*as.numeric(t<= 12) + as.numeric(t > 12)}, A2 = 12,
                                     enrollment.hold=4, DCO1 = 16, targetEvents2=c(300, 380), 
+                                    e1 = NULL,
                                     alpha=0.025, sf=gsDesign::sfLDOF, multiplicity.method="simes",
                                     method = "Independent Incremental", nCore=NULL, seed=123){
   
@@ -92,7 +93,8 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
                             orr = c(0.25, 0.3, 0.4, 0.2), rho = 0.7, dose_selection_endpoint = "ORR",
                             Lambda1 = function(t){(t/12)*as.numeric(t<= 12) + as.numeric(t > 12)}, A1 = 12,
                             Lambda2 = function(t){(t/12)*as.numeric(t<= 12) + as.numeric(t > 12)}, A2 = 12,
-                            enrollment.hold=4, DCO1 = 16, targetEvents2=c(300, 380), 
+                            enrollment.hold=4, DCO1 = 16, targetEvents2=c(300, 380),
+                            e1 = NULL,
                             alpha=0.025, sf=gsDesign::sfLDOF, multiplicity.method="simes",
                             method = "Independent Incremental", bd.z=NULL){
     
@@ -113,12 +115,14 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
     n2 = c(rep(n2[1], n.arms-1), n2[2])
     
     # calculate pre-specified weights YC ============================
-    e1 = matrix(rep(0,length(targetEvents2)*(n.arms-1)), nrow=length(targetEvents2))
-    for(k in 1:length(targetEvents2)){
-      e1[k,] = e1.ssr(n1 = n1, n2 = n2, m = m, 
-                      Lambda1 = Lambda1, 
-                      A1 = A1, Lambda2 = Lambda2,
-                      enrollment.hold=enrollment.hold, targetEvents = targetEvents2[k])
+    if(is.null(e1)){
+      e1 = matrix(rep(0,length(targetEvents2)*(n.arms-1)), nrow=length(targetEvents2))
+      for(k in 1:length(targetEvents2)){
+        e1[k,] = e1.ssr(n1 = n1, n2 = n2, m = m, 
+                        A1 = 12, Lambda1 = function(t){(t/12)*as.numeric(t<= 12) + as.numeric(t > 12)}, 
+                        Lambda2 = function(t){(t/10)*as.numeric(t<= 10) + as.numeric(t > 10)}, 
+                        enrollment.hold=enrollment.hold, targetEvents = targetEvents2[k])
+      }
     }
     
     for (i in 1:nSim){
@@ -214,6 +218,7 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
                                  Lambda1 = Lambda1, A1 = A1,
                                  Lambda2 = Lambda2, A2 = A2,
                                  enrollment.hold=enrollment.hold, DCO1 = DCO1, targetEvents2=targetEvents2, 
+                                 e1 = e1,
                                  alpha=alpha, sf=sf, multiplicity.method=multiplicity.method,
                                  method = method, bd.z=NULL
   )

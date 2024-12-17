@@ -94,6 +94,7 @@ simu.power.p23 = function(nSim=10, n1 = rep(50, 4), n2 = rep(200, 2), m = c(9,9,
                           Lambda1 = function(t){(t/12)*as.numeric(t<= 12) + as.numeric(t > 12)}, A1 = 12,
                           Lambda2 = function(t){(t/12)*as.numeric(t<= 12) + as.numeric(t > 12)}, A2 = 12,
                           enrollment.hold=4, DCO1 = 16, targetEvents2=c(300, 380), 
+                          e1 = NULL,
                           alpha=0.025, sf=gsDesign::sfLDOF, multiplicity.method="simes",
                           method = "Independent Incremental"){
   
@@ -116,13 +117,16 @@ simu.power.p23 = function(nSim=10, n1 = rep(50, 4), n2 = rep(200, 2), m = c(9,9,
   n2 = c(rep(n2[1], n.arms-1), n2[2])
   
   # calculate pre-specified weights YC ============================
-  e1 = matrix(rep(0,length(targetEvents2)*(n.arms-1)), nrow=length(targetEvents2))
-  for(k in 1:length(targetEvents2)){
-    e1[k,] = e1.ssr(n1 = n1, n2 = n2, m = m, 
-                    Lambda1 = Lambda1, 
-                    A1 = A1, Lambda2 = Lambda2,
-                    enrollment.hold=enrollment.hold, targetEvents = targetEvents2[k])
+  if(is.null(e1)){
+    e1 = matrix(rep(0,length(targetEvents2)*(n.arms-1)), nrow=length(targetEvents2))
+    for(k in 1:length(targetEvents2)){
+      e1[k,] = e1.ssr(n1 = n1, n2 = n2, m = m, 
+                      A1 = 12, Lambda1 = function(t){(t/12)*as.numeric(t<= 12) + as.numeric(t > 12)}, 
+                      Lambda2 = function(t){(t/10)*as.numeric(t<= 10) + as.numeric(t > 10)}, 
+                      enrollment.hold=enrollment.hold, targetEvents = targetEvents2[k])
+    }
   }
+  
   for (i in 1:nSim){
     if(i%% 1000 == 0){print(i)}
     p23i = simu.p23trial(n1 = n1, n2 = n2, m = m, 
