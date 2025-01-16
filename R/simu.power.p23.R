@@ -197,11 +197,11 @@ simu.power.p23 = function(nSim=10, n1 = rep(50, 4), n2 = rep(200, 2), m = c(9,9,
   doses.m = m[1:(n.arms-1)]
   max.m = max(doses.m)
   
-  if (sum(m == max.m) == 1) {
+  if (max.m >= m[length(m)]) {
     #There is a best dose in OS.
     best.dose = (1:(n.arms-1))[doses.m == max.m]
-    if (sum(s == best.dose) > 0) {
-      correct.selection = (1:nSim)[s == best.dose]
+    if (sum(s %in% best.dose) > 0) {
+      correct.selection = (1:nSim)[s %in% best.dose]
       correct.comb.z = matrix(comb.z[correct.selection, ], ncol = K)
       correct.bd.z = matrix(bd.z[correct.selection, ], ncol = K)
       generalized.pow=gsd.power(z = correct.comb.z, bd.z=correct.bd.z) * length(correct.selection) / nSim
