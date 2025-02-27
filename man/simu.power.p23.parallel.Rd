@@ -23,6 +23,7 @@ simu.power.p23.parallel(
   enrollment.hold = 4,
   DCO1 = 16,
   targetEvents2 = c(300, 380),
+  e1 = NULL,
   alpha = 0.025,
   sf = gsDesign::sfLDOF,
   multiplicity.method = "simes",

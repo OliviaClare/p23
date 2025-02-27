@@ -53,7 +53,10 @@ gsd.power = function(z, bd.z, p=NULL, bd.p=NULL){
   
   if (!is.null(z)) {
     if(is.matrix(bd.z)){
-      cum.pow = colMeans(z>bd.z, na.rm=T)
+      # tmp = t(apply(z, 1, function(x) {c(x[1]>bd.z[1], x[1]>bd.z[1] || x[2]>bd.z[2])}))
+      tmp = z>bd.z
+      tmp[,2] = ifelse(tmp[,1]>0, 1, tmp[,2]) 
+      cum.pow = colMeans(tmp, na.rm=T)
       # for (j in 1:K){
       #   tmp = 0
       #   for (ii in 1:j){
