@@ -259,8 +259,24 @@ conduct.p23 = function(data=NULL, DCO1=16, targetEvents2 = c(300, 380), dose_sel
     #then construct following z as independent incrementals
     
     #Multiplicity adjustment needs z from IAd for the unselected doses
-    z1.IAd = sel$z1[-s]
+    #multiplicity adjustment needs z from IAd for the unselected doses
     # ??? this also needs to be changed?? YC ==========================================
+    # z1.IAd = sel$z1[-s] 
+    # modified by YC ==========================================================
+    z1s = rep(NA, n.arms-1)
+    dat1cut.IAD = f.dataCut(data=data[data$stage == 1 & data$group!=0,], DCO=DCO1)
+    
+    dat1cutIA = f.dataCut(data=data[data$group%in%c(0,s)], targetEvents = targetEvents2[1]) %>% 
+      dplyr::filter(stage==1, group==0)
+    
+    dat1cut = rbind(dat1cut.IAD, dat1cutIA)
+    
+    for (j in 1:(n.arms-1)){
+      datj = dat1cut[(dat1cut$group == 0 | dat1cut$group == j), ]
+      z1s[j] = logrank.one.sided(time=datj$survTimeCut, cnsr=datj$cnsrCut, group=datj$group)$z
+    }
+    z1.IAd = z1s[-s]
+    # END of modification =====================================================
     
     ##############
     #1st analysis
