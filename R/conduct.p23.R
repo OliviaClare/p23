@@ -192,12 +192,16 @@ conduct.p23 = function(data=NULL, DCO1=16, targetEvents2 = c(300, 380), dose_sel
       mutate(nevents=cumsum(cnsr==0)) %>% 
       filter(nevents<= targetEvents2[1], stage==1) %>% nrow()    
     
-    actualEvents_S1_FA <- dat23 %>%
+    dat.FA <- dat23 %>%
       arrange(calendarTime) %>%               # Sort by time
-      dplyr::filter(cnsr == 0) %>%     
+      dplyr::filter(cnsr == 0) %>%
       mutate(nevents=cumsum(cnsr==0)) %>% 
-      filter(nevents<= targetEvents2[length(targetEvents2)], stage==1) %>% nrow()    
+      filter(nevents<= targetEvents2[length(targetEvents2)])
     
+    actualEvents_S1_FA <- dat.FA %>%
+      filter(stage==1) %>% nrow()    
+    
+    actualTime_FA <- max(dat.FA$calendarTime)
     
     #1st component in weighted z as of Stage 1 subjects at each analysis
     z11 = rep(NA, K)    
@@ -351,6 +355,7 @@ conduct.p23 = function(data=NULL, DCO1=16, targetEvents2 = c(300, 380), dose_sel
   } else if (method == "Disjoint Subjects") {
     o$actualEventsS1 = c(actualEvents_S1_IA, actualEvents_S1_FA)
     o$z1 = z1; o$z2 = matrix(z2, nrow=1); o$w = matrix(w, nrow=1)
+    o$actualTime_FA = actualTime_FA
   } else if (method == "Mixture") {
     o$z1.unselected = z1.IAd
     o$z11 = z11; o$z21 = z21; o$omega1 = omega1

@@ -1,5 +1,51 @@
 {
     "debugBreakpointsState": {
-        "breakpoints": []
+        "breakpoints": [
+            {
+                "id": 2,
+                "path": "C:/Users/chenyu92/Documents/p23/R/simu.power.p23.parallel.R",
+                "line_number": 135,
+                "function_steps": "2,3,3,11,4,3",
+                "function_name": "simu.power.p23.parallel",
+                "state": 1,
+                "editor_state": 1,
+                "editor_line_number": 135,
+                "is_pending_debug_completion": false,
+                "needs_updated_steps": false,
+                "type": 0,
+                "is_package_breakpoint": true,
+                "package_name": "p23"
+            },
+            {
+                "id": 3,
+                "path": "C:/Users/chenyu92/Documents/p23/R/simu.power.p23.parallel.R",
+                "line_number": 129,
+                "function_steps": "2,3,3,11,4,2",
+                "function_name": "simu.power.p23.parallel",
+                "state": 1,
+                "editor_state": 1,
+                "editor_line_number": 129,
+                "is_pending_debug_completion": false,
+                "needs_updated_steps": false,
+                "type": 0,
+                "is_package_breakpoint": true,
+                "package_name": "p23"
+            },
+            {
+                "id": 4,
+                "path": "C:/Users/chenyu92/Documents/p23/R/simu.power.p23.parallel.R",
+                "line_number": 92,
+                "function_steps": "2",
+                "function_name": "simu.power.p23.parallel",
+                "state": 1,
+                "editor_state": 1,
+                "editor_line_number": 92,
+                "is_pending_debug_completion": false,
+                "needs_updated_steps": false,
+                "type": 0,
+                "is_package_breakpoint": true,
+                "package_name": "p23"
+            }
+        ]
     }
 }

@@ -110,7 +110,7 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
     comb.z = matrix(NA, nrow=nSim, ncol=K)
     bd.z = matrix(NA, nrow=nSim, ncol=K)
     actual.events = matrix(NA, nrow=nSim, ncol=K)
-    s = rep(NA, nSim) #selected dose
+    s  = actual.time = rep(NA, nSim) #selected dose
     
     n2 = c(rep(n2[1], n.arms-1), n2[2])
     
@@ -140,6 +140,7 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
       s[i] = o$s
       
       actual.events[i,] = o$actualEvents
+      actual.time[i] = o$actualTime_FA
       
       if(o$method=="NA"){ # deal with IA exceeds FA YC =============================
         comb.z[i,]=c(NA, o$z)
@@ -178,7 +179,7 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
     }
   
     
-    re = list(comb.z=comb.z, s=s, bd.z=bd.z, actual.events=actual.events)
+    re = list(comb.z=comb.z, s=s, bd.z=bd.z, actual.events=actual.events, actual.time=actual.time)
     
     return(re)
   }
@@ -229,12 +230,14 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
   s.all <- c()
   bd.zall <- c()
   actual.eall <- c()
+  actual.time.all <- c()
   for( i in 1:length(results)){
     # if(is.na(sum(results[[i]]$comb.z))) next
     comb.zall = rbind(comb.zall, results[[i]]$comb.z)
     s.all <- c(s.all, results[[i]]$s)
     bd.zall <- rbind(bd.zall, results[[i]]$bd.z)
     actual.eall <- rbind(actual.eall, results[[i]]$actual.events)
+    actual.time.all <- c(actual.time.all, results[[i]]$actual.time)
   }
   cum.pow=gsd.power(z = comb.zall, bd.z=as.matrix(bd.zall))
   
@@ -253,6 +256,7 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
   o$selection = selection
   
   o$actualEvents = colMeans(actual.eall, na.rm=T)
+  o$actual.time = mean(actual.time.all)
   
   #Calculate the generalized power by simulation, defined as the correct selection of the best dose in OS and H0 rejected
   
