@@ -89,7 +89,7 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
                                     method = "Independent Incremental", nCore=NULL, seed=123){
   
   
-  simu.power.p23.onecore <- function(seed, nSim=10, n1 = rep(50, 4), n2 = rep(200, 2), m = c(9,9, 9, 9), 
+  simu.power.p23.onecore <- function(nSim=10, n1 = rep(50, 4), n2 = rep(200, 2), m = c(9,9, 9, 9), 
                             orr = c(0.25, 0.3, 0.4, 0.2), rho = 0.7, dose_selection_endpoint = "ORR",
                             Lambda1 = function(t){(t/12)*as.numeric(t<= 12) + as.numeric(t > 12)}, A1 = 12,
                             Lambda2 = function(t){(t/12)*as.numeric(t<= 12) + as.numeric(t > 12)}, A2 = 12,
@@ -98,7 +98,6 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
                             alpha=0.025, sf=gsDesign::sfLDOF, multiplicity.method="simes",
                             method = "Independent Incremental", bd.z=NULL){
     
-    set.seed(seed)
     #Number of analyses in stage 2
     K = length(targetEvents2)
     
@@ -194,9 +193,6 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
   
   nsim_per_cluster = ceiling(nSim/nCore)
   
-  if(length(seed==1)) seed=(1:nCore)*seed
-  else if(length(seed)!=nCore) stop("The number of seeds should match the number of cores")
-  
   
   #Number of analyses in stage 2
   K = length(targetEvents2)
@@ -212,8 +208,8 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
   
   
   # Use parLapply to run in parallel
-  results <- parallel::parLapply(cl, seed, fun = simu.power.p23.onecore,
-                                 nSim=nsim_per_cluster,
+  clusterSetRNGStream(cl, iseed = seed)
+  results <- parallel::parLapply(cl, rep(nsim_per_cluster, nCore), fun = simu.power.p23.onecore,
                                  n1 = n1, n2 = n2, m = m, 
                                  orr = orr, rho = rho, dose_selection_endpoint = dose_selection_endpoint,
                                  Lambda1 = Lambda1, A1 = A1,
