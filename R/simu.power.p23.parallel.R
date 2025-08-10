@@ -22,6 +22,7 @@
 #' @param method Options include "Independent Incremental": z1 at dose selection and z2 is from dose selection to kth analysis at stage 2; 
 #' "Disjoint Subjects": z1 is at kth analysis for stage 1 subjects; z2 is at the kth analysis for stage 2 subjects. z1 will be adjusted by multiplicity and closed testing procedure at each analysis.
 #' "Mixture": Only consider disjoint subjects at first analysis in stage 2. Starting from the 2nd analysis, consider independent incremental methods. Only z1 at 1st analysis will be adjusted by multiplicity and closed testing procedure.
+#' @param boundary.recal Whether to recalculate rejection boundary fo Disjoint Subjects method.
 #' @param nCore Number of cores distributed for simulation;
 #' @param seed An integer, or nCore number of integers as random seed for reproducibility;
 #' 
@@ -57,23 +58,26 @@
 #' Lambda1 = function(t){(t/12)*as.numeric(t<= 12) + as.numeric(t > 12)}, A1 = 12,
 #' Lambda2 = function(t){(t/12)*as.numeric(t<= 12) + as.numeric(t > 12)}, A2 = 12,
 #' enrollment.hold=4, DCO1 = 16, targetEvents2=c(300, 380), sf=gsDesign::sfLDOF, 
-#' alpha=0.025, method = "Independent Incremental", nCore = 10)
+#' alpha=0.025, method = "Independent Incremental",
+#' boundary.recal = TRUE,  nCore = 10)
 #' 
 #' simu.power.p23.parallel(nSim=1000, n1 = rep(50, 4), n2 = rep(200, 4), m = c(9, 9, 9, 9), 
 #' orr = c(0.25, 0.3, 0.3, 0.2), rho = 0.7, dose_selection_endpoint = "ORR",
 #' Lambda1 = function(t){(t/12)*as.numeric(t<= 12) + as.numeric(t > 12)}, A1 = 12,
 #' Lambda2 = function(t){(t/12)*as.numeric(t<= 12) + as.numeric(t > 12)}, A2 = 12,
 #' enrollment.hold=4, DCO1 = 16, targetEvents2=c(300, 380), sf=gsDesign::sfLDOF, 
-#' alpha=0.025, multiplicity.method = "simes", method = "Disjoint Subjects", nCore = 8)
+#' alpha=0.025, multiplicity.method = "simes", method = "Disjoint Subjects", 
+#' boundary.recal = TRUE, nCore = 8)
 #' 
 #' simu.power.p23.parallel(nSim=10, n1 = rep(50, 4), n2 = rep(200, 4), m = c(9, 9, 9, 9), 
 #' orr = c(0.25, 0.3, 0.3, 0.2), rho = 0.7, dose_selection_endpoint = "ORR",
 #' Lambda1 = function(t){(t/12)*as.numeric(t<= 12) + as.numeric(t > 12)}, A1 = 12,
 #' Lambda2 = function(t){(t/12)*as.numeric(t<= 12) + as.numeric(t > 12)}, A2 = 12,
 #' enrollment.hold=4, DCO1 = 16, targetEvents2=c(300, 380), sf=gsDesign::sfLDOF, 
-#' alpha=0.025, multiplicity.method = "dunnett", method = "Disjoint Subjects", nCore = 8)
+#' alpha=0.025, multiplicity.method = "dunnett", method = "Disjoint Subjects", 
+#' boundary.recal = TRUE, nCore = 8)
 #' 
-#' @importFrom parallel detectCores makeCluster parLapply stopCluster
+#' @importFrom parallel detectCores makeCluster parLapply stopCluster clusterSetRNGStream
 #' @importFrom gsDesign gsDesign
 #' @export 
 #' 
@@ -86,7 +90,9 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
                                     enrollment.hold=4, DCO1 = 16, targetEvents2=c(300, 380), 
                                     e1 = NULL,
                                     alpha=0.025, sf=gsDesign::sfLDOF, multiplicity.method="simes",
-                                    method = "Independent Incremental", nCore=NULL, seed=123){
+                                    method = "Independent Incremental",
+                                    boundary.recal = TRUE,
+                                    nCore=NULL, seed=123){
   
   
   simu.power.p23.onecore <- function(nSim=10, n1 = rep(50, 4), n2 = rep(200, 2), m = c(9,9, 9, 9), 
@@ -95,8 +101,9 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
                             Lambda2 = function(t){(t/12)*as.numeric(t<= 12) + as.numeric(t > 12)}, A2 = 12,
                             enrollment.hold=4, DCO1 = 16, targetEvents2=c(300, 380),
                             e1 = NULL,
-                            alpha=0.025, sf=gsDesign::sfLDOF, multiplicity.method="simes",
-                            method = "Independent Incremental", bd.z=NULL){
+                            alpha=0.025, sf = gsDesign::sfLDOF, multiplicity.method = "simes",
+                            method = "Independent Incremental", bd.z = NULL,
+                            boundary.recal = TRUE){
     
     #Number of analyses in stage 2
     K = length(targetEvents2)
@@ -147,16 +154,19 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
       }
 
       # now determined by actual events YC ======================================
-      #rejection boundary by traditional GSD
       if (K == 1) {bd.z[i] = qnorm(1-alpha)} else {
         if(o$method == "Disjoint Subjects"){
-          corr.z = o$w[1]*o$w[2]*sqrt(o$actualEventsS1[1]/o$actualEventsS1[K]) + 
-            sqrt(1-o$w[1]^2)*sqrt(1-o$w[2]^2)*sqrt((o$actualEvents[1]-o$actualEventsS1[1])/(o$actualEvents[K]-o$actualEventsS1[K]))
-          
-          bd.z[i,] = gsDesign::gsDesign(k=K,alpha=alpha,
-                                        sfu=sf, test.type=1,
-                                        n.I = c(o$actualEvents[1], o$actualEvents[1]/corr.z^2),
-                                        maxn.IPlan = targetEvents2[K])$upper$bound
+          if(boundary.recal == TRUE){
+            corr.z = o$w[1]*o$w[2]*sqrt(o$actualEventsS1[1]/o$actualEventsS1[K]) + 
+              sqrt(1-o$w[1]^2)*sqrt(1-o$w[2]^2)*sqrt((o$actualEvents[1]-o$actualEventsS1[1])/(o$actualEvents[K]-o$actualEventsS1[K]))
+            
+            bd.z[i,] = gsDesign::gsDesign(k=K,alpha=alpha,
+                                          sfu=sf, test.type=1,
+                                          n.I = c(o$actualEvents[1], o$actualEvents[1]/corr.z^2),
+                                          maxn.IPlan = targetEvents2[K])$upper$bound
+          }else{#rejection boundary by traditional GSD
+            bd.z[i,] = gsDesign::gsDesign(k=K,alpha=alpha,timing=o$actualEvents/o$actualEvents[K],sfu=sf, test.type=1)$upper$bound
+          }
         }else{
           bd.z[i,] = gsDesign::gsDesign(k=K,alpha=alpha,timing=o$actualEvents/o$actualEvents[K],sfu=sf, test.type=1)$upper$bound
         }
@@ -192,7 +202,7 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
   doParallel::registerDoParallel(cl)
   
   nsim_per_cluster = ceiling(nSim/nCore)
-  
+  nsim_last_cluster = nSim - nsim_per_cluster*(nCore-1)
   
   #Number of analyses in stage 2
   K = length(targetEvents2)
@@ -209,7 +219,7 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
   
   # Use parLapply to run in parallel
   clusterSetRNGStream(cl, iseed = seed)
-  results <- parallel::parLapply(cl, rep(nsim_per_cluster, nCore), fun = simu.power.p23.onecore,
+  results <- parallel::parLapply(cl, c(rep(nsim_per_cluster, nCore-1), nsim_last_cluster), fun = simu.power.p23.onecore,
                                  n1 = n1, n2 = n2, m = m, 
                                  orr = orr, rho = rho, dose_selection_endpoint = dose_selection_endpoint,
                                  Lambda1 = Lambda1, A1 = A1,
@@ -217,11 +227,11 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
                                  enrollment.hold=enrollment.hold, DCO1 = DCO1, targetEvents2=targetEvents2, 
                                  e1 = e1,
                                  alpha=alpha, sf=sf, multiplicity.method=multiplicity.method,
-                                 method = method, bd.z=NULL
+                                 method = method, bd.z=NULL,
+                                 boundary.recal = boundary.recal
   )
   
   
-  nSims_actual = (nsim_per_cluster * nCore)
   comb.zall <- c()
   s.all <- c()
   bd.zall <- c()
@@ -240,7 +250,7 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
   
   selection = rep(NA, n.arms-1)
   for (j in 1:(n.arms-1)) {
-    selection[j] = sum(s.all == j) / nSims_actual
+    selection[j] = sum(s.all == j) / nSim
   }
   
   o = list()
@@ -264,7 +274,7 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
     #There is a best dose in OS.
     best.dose = (1:(n.arms-1))[doses.m == max.m]
     if (sum(s.all %in% best.dose) > 0) {
-      correct.selection = (1:nSims_actual)[s.all %in% best.dose]
+      correct.selection = (1:nSim)[s.all %in% best.dose]
       correct.comb.z = matrix(comb.zall[correct.selection, ], ncol = K)
       correct.bd.z = matrix(bd.zall[correct.selection, ], ncol = K)
       generalized.pow=gsd.power(z = correct.comb.z, bd.z=correct.bd.z) * length(correct.selection) / nSim
