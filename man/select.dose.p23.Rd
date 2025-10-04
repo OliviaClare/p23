@@ -4,7 +4,7 @@
 \alias{select.dose.p23}
 \title{Select dose at Stage 1 in a phase 2/3 dose optimization trial for survival endpoint}
 \usage{
-\method{select}{dose.p23}(data = NULL, DCO1 = 16, dose_selection_endpoint = "ORR")
+\method{select}{dose.p23}(data = NULL, DCO1 = 16, dose_selection_endpoint = "ORR", ORRdiff = 0)
 }
 \arguments{
 \item{data}{Dataset produced by simu.p23trial() function.}
@@ -12,6 +12,8 @@
 \item{DCO1}{Data cutoff date for stage 1 dose selection}
 
 \item{dose_selection_endpoint}{Dose selection end point: "ORR" or "not ORR"}
+
+\item{ORRdiff}{The tolerated difference between ORR of highest dose and lower doses, with default value 0.}
 }
 \value{
 \describe{

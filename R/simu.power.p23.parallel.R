@@ -23,6 +23,7 @@
 #' "Disjoint Subjects": z1 is at kth analysis for stage 1 subjects; z2 is at the kth analysis for stage 2 subjects. z1 will be adjusted by multiplicity and closed testing procedure at each analysis.
 #' "Mixture": Only consider disjoint subjects at first analysis in stage 2. Starting from the 2nd analysis, consider independent incremental methods. Only z1 at 1st analysis will be adjusted by multiplicity and closed testing procedure.
 #' @param boundary.recal Whether to recalculate rejection boundary fo Disjoint Subjects method.
+#' @param ORRdiff The tolerated difference between ORR of highest dose and lower doses, with default value 0. 
 #' @param nCore Number of cores distributed for simulation;
 #' @param seed An integer, or nCore number of integers as random seed for reproducibility;
 #' 
@@ -92,6 +93,7 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
                                     alpha=0.025, sf=gsDesign::sfLDOF, multiplicity.method="simes",
                                     method = "Independent Incremental",
                                     boundary.recal = TRUE,
+                                    ORRdiff = 0,
                                     nCore=NULL, seed=123){
   
   
@@ -103,7 +105,7 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
                             e1 = NULL,
                             alpha=0.025, sf = gsDesign::sfLDOF, multiplicity.method = "simes",
                             method = "Independent Incremental", bd.z = NULL,
-                            boundary.recal = TRUE){
+                            boundary.recal = TRUE, ORRdiff = 0){
     
     #Number of analyses in stage 2
     K = length(targetEvents2)
@@ -142,7 +144,7 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
                     dose_selection_endpoint = dose_selection_endpoint, 
                     targetEvents2 = targetEvents2, 
                     method = method, 
-                    multiplicity.method=multiplicity.method, e1=e1)
+                    multiplicity.method=multiplicity.method, e1=e1, ORRdiff=ORRdiff)
       s[i] = o$s
       
       actual.events[i,] = o$actualEvents
@@ -228,7 +230,7 @@ simu.power.p23.parallel <- function(nSim=100, n1 = rep(50, 4), n2 = rep(200, 2),
                                  e1 = e1,
                                  alpha=alpha, sf=sf, multiplicity.method=multiplicity.method,
                                  method = method, bd.z=NULL,
-                                 boundary.recal = boundary.recal
+                                 boundary.recal = boundary.recal, ORRdiff=ORRdiff
   )
   
   

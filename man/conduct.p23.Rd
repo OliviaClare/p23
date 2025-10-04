@@ -11,7 +11,8 @@ conduct.p23(
   dose_selection_endpoint = "ORR",
   method = "Independent Incremental",
   multiplicity.method = "simes",
-  e1 = NULL
+  e1 = NULL,
+  ORRdiff = 0
 )
 }
 \arguments{
@@ -24,6 +25,8 @@ conduct.p23(
 \item{dose_selection_endpoint}{Endpoint for dose selection at Stage 1. "ORR" or "not ORR"}
 
 \item{method}{"simes", "Dunnett".}
+
+\item{ORRdiff}{The tolerated difference between ORR of highest dose and lower doses, with default value 0.}
 }
 \value{
 If method is "Independent Incremental", return an object with variables

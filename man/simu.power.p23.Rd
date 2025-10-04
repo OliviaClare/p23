@@ -27,7 +27,8 @@ simu.power.p23(
   alpha = 0.025,
   sf = gsDesign::sfLDOF,
   multiplicity.method = "simes",
-  method = "Independent Incremental"
+  method = "Independent Incremental",
+  ORRdiff = 0
 )
 }
 \arguments{
@@ -68,6 +69,8 @@ simu.power.p23(
 \item{method}{Options include "Independent Incremental": z1 at dose selection and z2 is from dose selection to kth analysis at stage 2;
 "Disjoint Subjects": z1 is at kth analysis for stage 1 subjects; z2 is at the kth analysis for stage 2 subjects. z1 will be adjusted by multiplicity and closed testing procedure at each analysis.
 "Mixture": Only consider disjoint subjects at first analysis in stage 2. Starting from the 2nd analysis, consider independent incremental methods. Only z1 at 1st analysis will be adjusted by multiplicity and closed testing procedure.}
+
+\item{ORRdiff}{The tolerated difference between ORR of highest dose and lower doses, with default value 0.}
 }
 \value{
 An object with values:

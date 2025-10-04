@@ -5,6 +5,7 @@
 #' @param data Dataset produced by simu.p23trial() function.
 #' @param DCO1 Data cutoff date for stage 1 dose selection
 #' @param dose_selection_endpoint  Dose selection end point: "ORR" or "not ORR"
+#' @param ORRdiff The tolerated difference between ORR of highest dose and lower doses, with default value 0. 
 #' 
 #' @return 
 #' \describe{
@@ -52,7 +53,7 @@
 #' 
 #' @export 
 #' 
-select.dose.p23 = function(data=NULL, DCO1=16, dose_selection_endpoint = "ORR"){
+select.dose.p23 = function(data=NULL, DCO1=16, dose_selection_endpoint = "ORR", ORRdiff=0){
    
    ######################
    #Stage 1
@@ -86,10 +87,16 @@ select.dose.p23 = function(data=NULL, DCO1=16, dose_selection_endpoint = "ORR"){
    #3. Dose selection
    if (dose_selection_endpoint == "ORR"){
      tmp = sort(orr.diff, index.return = TRUE)
+     if(ORRdiff > 0 && orr.diff[1]==max(orr.diff) && (1-ORRdiff)*orr.diff[1]< max(orr.diff[-1])){
+       # tolerate ORRdiff% difference between ORR of highest dose and lower doses: default first dose is the highest dose
+         s=which.max(orr.diff[-1])+1
+     }else{
+       s = tmp$ix[n.arms-1]
+     }
    } else {
      tmp = sort(z1, index.return = TRUE)
+     s = tmp$ix[n.arms-1]
    }
-   s = tmp$ix[n.arms-1]
    
    o = list()
    o$z1 = z1

@@ -22,6 +22,7 @@
 #' @param method Options include "Independent Incremental": z1 at dose selection and z2 is from dose selection to kth analysis at stage 2; 
 #' "Disjoint Subjects": z1 is at kth analysis for stage 1 subjects; z2 is at the kth analysis for stage 2 subjects. z1 will be adjusted by multiplicity and closed testing procedure at each analysis.
 #' "Mixture": Only consider disjoint subjects at first analysis in stage 2. Starting from the 2nd analysis, consider independent incremental methods. Only z1 at 1st analysis will be adjusted by multiplicity and closed testing procedure.
+#' @param ORRdiff The tolerated difference between ORR of highest dose and lower doses, with default value 0. 
 #' 
 #' @return An object with values:
 #' \describe{
@@ -96,7 +97,8 @@ simu.power.p23 = function(nSim=10, n1 = rep(50, 4), n2 = rep(200, 2), m = c(9,9,
                           enrollment.hold=4, DCO1 = 16, targetEvents2=c(300, 380), 
                           e1 = NULL,
                           alpha=0.025, sf=gsDesign::sfLDOF, multiplicity.method="simes",
-                          method = "Independent Incremental"){
+                          method = "Independent Incremental", ORRdiff = 0
+                          ){
   
   
   #Number of analyses in stage 2
@@ -137,7 +139,7 @@ simu.power.p23 = function(nSim=10, n1 = rep(50, 4), n2 = rep(200, 2), m = c(9,9,
                   dose_selection_endpoint = dose_selection_endpoint, 
                   targetEvents2 = targetEvents2, method = method, 
                   multiplicity.method=multiplicity.method,
-                  e1=e1)
+                  e1=e1, ORRdiff=ORRdiff)
     s[i] = o$s
     
     if(o$method=="NA"){ # deal with IA exceeds FA YC =============================

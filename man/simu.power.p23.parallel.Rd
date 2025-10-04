@@ -28,6 +28,8 @@ simu.power.p23.parallel(
   sf = gsDesign::sfLDOF,
   multiplicity.method = "simes",
   method = "Independent Incremental",
+  boundary.recal = TRUE,
+  ORRdiff = 0,
   nCore = NULL,
   seed = 123
 )
@@ -71,6 +73,10 @@ simu.power.p23.parallel(
 "Disjoint Subjects": z1 is at kth analysis for stage 1 subjects; z2 is at the kth analysis for stage 2 subjects. z1 will be adjusted by multiplicity and closed testing procedure at each analysis.
 "Mixture": Only consider disjoint subjects at first analysis in stage 2. Starting from the 2nd analysis, consider independent incremental methods. Only z1 at 1st analysis will be adjusted by multiplicity and closed testing procedure.}
 
+\item{boundary.recal}{Whether to recalculate rejection boundary fo Disjoint Subjects method.}
+
+\item{ORRdiff}{The tolerated difference between ORR of highest dose and lower doses, with default value 0.}
+
 \item{nCore}{Number of cores distributed for simulation;}
 
 \item{seed}{An integer, or nCore number of integers as random seed for reproducibility;}
@@ -110,20 +116,23 @@ orr = c(0.25, 0.3, 0.4, 0.2), rho = 0.7, dose_selection_endpoint = "ORR",
 Lambda1 = function(t){(t/12)*as.numeric(t<= 12) + as.numeric(t > 12)}, A1 = 12,
 Lambda2 = function(t){(t/12)*as.numeric(t<= 12) + as.numeric(t > 12)}, A2 = 12,
 enrollment.hold=4, DCO1 = 16, targetEvents2=c(300, 380), sf=gsDesign::sfLDOF, 
-alpha=0.025, method = "Independent Incremental", nCore = 10)
+alpha=0.025, method = "Independent Incremental",
+boundary.recal = TRUE,  nCore = 10)
 
 simu.power.p23.parallel(nSim=1000, n1 = rep(50, 4), n2 = rep(200, 4), m = c(9, 9, 9, 9), 
 orr = c(0.25, 0.3, 0.3, 0.2), rho = 0.7, dose_selection_endpoint = "ORR",
 Lambda1 = function(t){(t/12)*as.numeric(t<= 12) + as.numeric(t > 12)}, A1 = 12,
 Lambda2 = function(t){(t/12)*as.numeric(t<= 12) + as.numeric(t > 12)}, A2 = 12,
 enrollment.hold=4, DCO1 = 16, targetEvents2=c(300, 380), sf=gsDesign::sfLDOF, 
-alpha=0.025, multiplicity.method = "simes", method = "Disjoint Subjects", nCore = 8)
+alpha=0.025, multiplicity.method = "simes", method = "Disjoint Subjects", 
+boundary.recal = TRUE, nCore = 8)
 
 simu.power.p23.parallel(nSim=10, n1 = rep(50, 4), n2 = rep(200, 4), m = c(9, 9, 9, 9), 
 orr = c(0.25, 0.3, 0.3, 0.2), rho = 0.7, dose_selection_endpoint = "ORR",
 Lambda1 = function(t){(t/12)*as.numeric(t<= 12) + as.numeric(t > 12)}, A1 = 12,
 Lambda2 = function(t){(t/12)*as.numeric(t<= 12) + as.numeric(t > 12)}, A2 = 12,
 enrollment.hold=4, DCO1 = 16, targetEvents2=c(300, 380), sf=gsDesign::sfLDOF, 
-alpha=0.025, multiplicity.method = "dunnett", method = "Disjoint Subjects", nCore = 8)
+alpha=0.025, multiplicity.method = "dunnett", method = "Disjoint Subjects", 
+boundary.recal = TRUE, nCore = 8)
 
 }

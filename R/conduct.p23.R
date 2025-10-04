@@ -12,6 +12,7 @@
 #' "Disjoint Subjects": z1 is at kth analysis for stage 1 subjects; z2 is at the kth analysis for stage 2 subjects. z1 will be adjusted by multiplicity and closed testing procedure at each analysis.
 #' "Mixture": Only consider disjoint subjects at first analysis in stage 2. Starting from the 2nd analysis, consider independent incremental methods. Only z1 at 1st analysis will be adjusted by multiplicity and closed testing procedure.
 #' @param method "simes", "Dunnett". 
+#' @param ORRdiff The tolerated difference between ORR of highest dose and lower doses, with default value 0. 
 #' 
 #' @return If method is "Independent Incremental", return an object with variables
 #' \describe{
@@ -108,10 +109,10 @@
 #' @export 
 #' 
 conduct.p23 = function(data=NULL, DCO1=16, targetEvents2 = c(300, 380), dose_selection_endpoint = "ORR",
-                       method = "Independent Incremental", multiplicity.method="simes", e1=NULL){
+                       method = "Independent Incremental", multiplicity.method="simes", e1=NULL, ORRdiff=0){
 
   #1. Dose selection  
-  sel = select.dose.p23 (data=data, DCO1=DCO1, dose_selection_endpoint = dose_selection_endpoint)
+  sel = select.dose.p23 (data=data, DCO1=DCO1, dose_selection_endpoint = dose_selection_endpoint, ORRdiff=ORRdiff)
   s=sel$s
 
   
