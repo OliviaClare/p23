@@ -87,7 +87,7 @@ select.dose.p23 = function(data=NULL, DCO1=16, dose_selection_endpoint = "ORR", 
    #3. Dose selection
    if (dose_selection_endpoint == "ORR"){
      tmp = sort(orr.diff, index.return = TRUE)
-     if(ORRdiff > 0 && orr.diff[1]==max(orr.diff) && ((orr.diff[1]-max(orr.diff[-1]))>0.05) ){
+     if(ORRdiff > 0 && orr.diff[1]==max(orr.diff) && ((orr.diff[1]-max(orr.diff[-1]))<=0.05) ){
        # tolerate ORRdiff% difference between ORR of highest dose and lower doses: default first dose is the highest dose
          s=which.max(orr.diff[-1])+1
      }else{
